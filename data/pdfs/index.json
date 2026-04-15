@@ -1,0 +1,24 @@
+{
+  "pdfs": [
+    {
+      "id": "ffeb2fe3-9c09-4713-99b5-4b4b868bc2f3",
+      "fileName": "test.pdf",
+      "title": "test",
+      "authors": [],
+      "pageCount": 1,
+      "uploadedAt": "2026-04-15T17:32:53.604Z",
+      "slug": "test",
+      "filePath": "ffeb2fe3-9c09-4713-99b5-4b4b868bc2f3.pdf"
+    },
+    {
+      "id": "7923b599-f994-4586-8851-23254a393450",
+      "fileName": "Purcell_Electricity-and-Magnetism-3rd-Edition.pdf",
+      "title": "Purcell_Electricity-and-Magnetism-3rd-Edition",
+      "authors": [],
+      "pageCount": 863,
+      "uploadedAt": "2026-04-15T18:09:05.760Z",
+      "slug": "purcellelectricity-and-magnetism-3rd-edition",
+      "filePath": "7923b599-f994-4586-8851-23254a393450.pdf"
+    }
+  ]
+}
