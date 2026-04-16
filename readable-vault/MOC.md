@@ -15,6 +15,7 @@ updated: '2026-04-16'
 - [[729218a5-895c-4b48-b08d-8bfffd4e9793]]
 - [[14511eaa-3a2f-450d-8659-6ae48ede72d6]]
 - [[35824664-dc41-46df-8d97-e84bc2a9726b]]
+- [[9b6b79ce-6528-4104-ba84-dfaec8a3d1ee]]
 
 ## Concepts
 
@@ -27,6 +28,8 @@ updated: '2026-04-16'
 - [[steady-state-force-balance-em]]
 - [[motional-emf-in-nonuniform-field]]
 - [[frame-dependence-of-electric-and-magnetic-fields]]
+- [[electrostatic-potential-energy]]
+- [[nacl-madelung-energy]]
 
 ## Questions
 

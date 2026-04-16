@@ -19,6 +19,7 @@ export interface BuildContextParams {
   pdfId: string;
   vaultContext?: string;
   pageTexts: Map<number, string>;
+  annotationSummary?: string;
 }
 
 type ContentBlockParam = Anthropic.ContentBlockParam;
@@ -118,6 +119,14 @@ export function buildContext(params: BuildContextParams): {
       contextBlocks.push({
         type: 'text',
         text: `[Snapshot from page ${snapshot.pageNumber}, region: x=${snapshot.rect.x}, y=${snapshot.rect.y}, w=${snapshot.rect.w}, h=${snapshot.rect.h}]`,
+      });
+    }
+
+    // Annotation summary
+    if (params.annotationSummary) {
+      contextBlocks.push({
+        type: 'text',
+        text: params.annotationSummary,
       });
     }
 

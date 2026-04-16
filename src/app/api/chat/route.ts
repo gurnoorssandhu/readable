@@ -94,6 +94,36 @@ export async function POST(request: NextRequest) {
       }
     }
 
+    // Load annotation summary for context
+    let annotationSummary = '';
+    try {
+      const annotationsPath = path.join(process.cwd(), 'data', 'annotations', `${pdfId}.json`);
+      const annotationsRaw = await readFile(annotationsPath, 'utf-8');
+      const annotationsData = JSON.parse(annotationsRaw);
+      const strokes = annotationsData.strokes ?? [];
+      if (strokes.length > 0) {
+        // Group by page and tool
+        const summary: Record<number, { pen: number; highlighter: number }> = {};
+        for (const s of strokes) {
+          const pg: number = s.pageNumber;
+          const tool: 'pen' | 'highlighter' = s.tool;
+          if (!summary[pg]) summary[pg] = { pen: 0, highlighter: 0 };
+          summary[pg][tool]++;
+        }
+        const parts = Object.entries(summary)
+          .sort(([a], [b]) => Number(a) - Number(b))
+          .map(([page, counts]) => {
+            const tools = [];
+            if (counts.pen > 0) tools.push(`${counts.pen} pen stroke(s)`);
+            if (counts.highlighter > 0) tools.push(`${counts.highlighter} highlighter stroke(s)`);
+            return `Page ${page}: ${tools.join(', ')}`;
+          });
+        annotationSummary = `[User annotations on this PDF: ${parts.join('; ')}]`;
+      }
+    } catch {
+      // No annotations file, that's fine
+    }
+
     // Build context for Claude
     const { system, messages: anthropicMessages } = buildContext({
       messages: session.messages,
@@ -104,6 +134,7 @@ export async function POST(request: NextRequest) {
       pdfId,
       vaultContext: '',
       pageTexts,
+      annotationSummary,
     });
 
     // Set up SSE streaming

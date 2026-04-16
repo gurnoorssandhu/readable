@@ -2,6 +2,7 @@
 
 import React, { useEffect, useRef, useCallback, useState } from 'react';
 import type { PDFDocumentProxy } from 'pdfjs-dist';
+import { AnnotationCanvas } from './AnnotationCanvas';
 
 interface PdfPageProps {
   pageNumber: number;
@@ -76,15 +77,24 @@ export function PdfPage({ pageNumber, pdfDocument, zoom, onCanvasReady }: PdfPag
       className="pdf-page flex justify-center py-2"
       data-page-number={pageNumber}
     >
-      <canvas
-        ref={canvasRef}
-        className="shadow-lg rounded"
-        style={{
-          display: 'block',
-          width: cssWidth ? `${cssWidth}px` : undefined,
-          height: cssHeight ? `${cssHeight}px` : undefined,
-        }}
-      />
+      <div style={{ position: 'relative', width: cssWidth ? `${cssWidth}px` : undefined, height: cssHeight ? `${cssHeight}px` : undefined }}>
+        <canvas
+          ref={canvasRef}
+          className="shadow-lg rounded"
+          style={{
+            display: 'block',
+            width: '100%',
+            height: '100%',
+          }}
+        />
+        {baseDimensions && (
+          <AnnotationCanvas
+            pageNumber={pageNumber}
+            zoom={zoom}
+            baseDimensions={baseDimensions}
+          />
+        )}
+      </div>
     </div>
   );
 }

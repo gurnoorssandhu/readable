@@ -111,6 +111,27 @@ export function useSnapshot(
       if (!tempCtx) return null;
 
       tempCtx.putImageData(imageData, 0, 0);
+
+      // Composite annotation canvas if it exists
+      const annotationCanvas = pageElement.querySelector<HTMLCanvasElement>('[data-annotation-canvas]');
+      if (annotationCanvas) {
+        // Draw the corresponding region from the annotation canvas
+        // The annotation canvas is at CSS pixel scale (baseDimensions * zoom)
+        // We need to extract the same region from it
+        const annoSx = Math.max(0, Math.round(localX));
+        const annoSy = Math.max(0, Math.round(localY));
+        const annoSw = Math.min(annotationCanvas.width - annoSx, Math.round(rect.w));
+        const annoSh = Math.min(annotationCanvas.height - annoSy, Math.round(rect.h));
+
+        if (annoSw > 0 && annoSh > 0) {
+          tempCtx.drawImage(
+            annotationCanvas,
+            annoSx, annoSy, annoSw, annoSh,  // source rect
+            0, 0, sw, sh                       // dest rect (stretch to match PDF resolution)
+          );
+        }
+      }
+
       // Strip the data URL prefix — API needs raw base64
       const dataUrl = tempCanvas.toDataURL('image/png');
       return dataUrl.replace(/^data:image\/png;base64,/, '');

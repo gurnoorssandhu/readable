@@ -4,6 +4,7 @@ import React, { useRef, useCallback, useMemo, useEffect } from 'react';
 import { usePdfDocument } from '@/hooks/usePdfDocument';
 import { usePageVisibility } from '@/hooks/usePageVisibility';
 import { usePdfStore } from '@/store/pdfStore';
+import { useAnnotationStore } from '@/store/annotationStore';
 import { PdfPage } from './PdfPage';
 import { PageTracker } from './PageTracker';
 import { SnapshotOverlay } from './SnapshotOverlay';
@@ -20,6 +21,52 @@ export function PdfViewer({ pdfId }: PdfViewerProps) {
   const setZoom = usePdfStore((s) => s.setZoom);
   const scrollToPage = usePdfStore((s) => s.scrollToPage);
   const setScrollToPage = usePdfStore((s) => s.setScrollToPage);
+
+  const pdfIdForAnnotations = useMemo(() => pdfId, [pdfId]);
+
+  // Load annotations on mount / pdfId change
+  useEffect(() => {
+    fetch(`/api/annotations?pdfId=${pdfIdForAnnotations}`)
+      .then((r) => r.json())
+      .then((data) => {
+        useAnnotationStore.getState().loadStrokes(data.strokes ?? []);
+      })
+      .catch(() => {});
+  }, [pdfIdForAnnotations]);
+
+  // Debounced save on annotation changes
+  useEffect(() => {
+    let timeout: NodeJS.Timeout;
+    const unsub = useAnnotationStore.subscribe((state, prevState) => {
+      if (state.strokesByPage !== prevState.strokesByPage) {
+        clearTimeout(timeout);
+        timeout = setTimeout(() => {
+          const strokes = useAnnotationStore.getState().getAllStrokes();
+          fetch('/api/annotations', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ pdfId: pdfIdForAnnotations, strokes }),
+          }).catch(() => {});
+        }, 1000);
+      }
+    });
+    return () => { unsub(); clearTimeout(timeout); };
+  }, [pdfIdForAnnotations]);
+
+  // Ctrl+Z for undo
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.ctrlKey || e.metaKey) && e.key === 'z') {
+        const mode = useAnnotationStore.getState().annotationMode;
+        if (mode !== 'off') {
+          e.preventDefault();
+          useAnnotationStore.getState().undo();
+        }
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
 
   // Scroll to page when requested
   useEffect(() => {

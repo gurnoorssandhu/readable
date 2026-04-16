@@ -5,8 +5,10 @@ import { PanelLeft, Camera, MessageSquare, Home } from 'lucide-react';
 import { usePdfStore } from '@/store/pdfStore';
 import { useSessionStore } from '@/store/sessionStore';
 import { useUiStore } from '@/store/uiStore';
+import { useAnnotationStore } from '@/store/annotationStore';
 import { ZoomDropdown } from '@/components/pdf/ZoomDropdown';
 import { CoReadingToggle } from '@/components/session/CoReadingToggle';
+import { AnnotationToolbar } from '@/components/pdf/AnnotationToolbar';
 
 interface ReaderToolbarProps {
   pdfId: string;
@@ -27,6 +29,7 @@ export function ReaderToolbar({ pdfId, onEndRequest, onBack }: ReaderToolbarProp
   const setSnapshotMode = useUiStore((s) => s.setSnapshotMode);
   const toggleChatPanel = useUiStore((s) => s.toggleChatPanel);
   const isCoReading = useSessionStore((s) => s.isCoReading);
+  const setAnnotationMode = useAnnotationStore((s) => s.setAnnotationMode);
 
   const [toolbarVisible, setToolbarVisible] = useState(true);
   const [editingPage, setEditingPage] = useState(false);
@@ -126,12 +129,17 @@ export function ReaderToolbar({ pdfId, onEndRequest, onBack }: ReaderToolbarProp
 
         {/* Snapshot */}
         <button
-          onClick={() => setSnapshotMode(true)}
+          onClick={() => { setSnapshotMode(true); setAnnotationMode('off'); }}
           className={iconBtnClass}
           title="Take Snapshot"
         >
           <Camera size={16} className={iconClass} />
         </button>
+
+        <Separator />
+
+        {/* Annotation tools */}
+        <AnnotationToolbar />
 
         <Separator />
 

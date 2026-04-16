@@ -5,7 +5,7 @@ title: Purcell_Electricity-and-Magnetism-3rd-Edition
 authors: []
 pageCount: 863
 created: '2026-04-15'
-lastSession: '2026-04-15'
+lastSession: '2026-04-16'
 ---
 # Purcell_Electricity-and-Magnetism-3rd-Edition
 
@@ -26,3 +26,4 @@ _None yet_
 - [[729218a5-895c-4b48-b08d-8bfffd4e9793]] (2026-04-15)
 - [[14511eaa-3a2f-450d-8659-6ae48ede72d6]] (2026-04-15)
 - [[35824664-dc41-46df-8d97-e84bc2a9726b]] (2026-04-15)
+- [[9b6b79ce-6528-4104-ba84-dfaec8a3d1ee]] (2026-04-16)
