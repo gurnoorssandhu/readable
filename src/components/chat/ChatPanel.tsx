@@ -25,16 +25,13 @@ export function ChatPanel() {
   if (!isCoReading || !chatPanelOpen) return null;
 
   return (
-    <div className="fixed right-0 top-0 bottom-0 w-[420px] max-w-full z-40 flex flex-col glass-strong border-l border-[var(--glass-border)] shadow-2xl">
+    <div className="fixed right-0 top-0 bottom-0 w-[380px] max-w-full z-40 flex flex-col border-l border-[var(--glass-border)] shadow-2xl rounded-tl-xl" style={{ background: 'rgba(15,16,24,0.88)', backdropFilter: 'blur(24px)' }}>
       {/* Header */}
-      <div className="flex items-center justify-between px-4 py-3 border-b border-[var(--glass-border)]">
+      <div className="flex items-center justify-between px-4 py-2 border-b border-[var(--glass-border)]">
         <div className="flex items-center gap-2">
           <BookOpen size={18} className="text-[var(--accent)]" />
           <h2 className="font-semibold text-sm text-[var(--text-primary)]">Co-Reader</h2>
-          <span className="flex h-2 w-2">
-            <span className="animate-ping absolute inline-flex h-2 w-2 rounded-full bg-[var(--success)] opacity-75" />
-            <span className="relative inline-flex rounded-full h-2 w-2 bg-[var(--success)]" />
-          </span>
+          <span className="w-1.5 h-1.5 rounded-full bg-[var(--success)]" />
         </div>
         <button
           onClick={() => setChatPanelOpen(false)}

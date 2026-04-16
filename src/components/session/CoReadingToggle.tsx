@@ -10,9 +10,10 @@ import { Spinner } from '@/components/ui/Spinner';
 interface CoReadingToggleProps {
   pdfId: string;
   onEndRequest?: () => void;
+  compact?: boolean;
 }
 
-export function CoReadingToggle({ pdfId, onEndRequest }: CoReadingToggleProps) {
+export function CoReadingToggle({ pdfId, onEndRequest, compact }: CoReadingToggleProps) {
   const isCoReading = useSessionStore((s) => s.isCoReading);
   const { startSession, isLoading } = useSession();
 
@@ -24,6 +25,30 @@ export function CoReadingToggle({ pdfId, onEndRequest }: CoReadingToggleProps) {
       await startSession(pdfId);
     }
   };
+
+  if (compact) {
+    return (
+      <button
+        onClick={handleClick}
+        disabled={isLoading}
+        className="p-2 rounded-lg hover:bg-[var(--glass-bg-hover)] transition-colors"
+        title={isCoReading ? 'End Co-Reading' : 'Start Co-Reading'}
+      >
+        {isLoading ? (
+          <Spinner size="sm" />
+        ) : (
+          <BookOpen
+            size={16}
+            className={
+              isCoReading
+                ? 'text-[var(--accent)]'
+                : 'text-[var(--text-muted)] hover:text-[var(--text-primary)]'
+            }
+          />
+        )}
+      </button>
+    );
+  }
 
   return (
     <Button

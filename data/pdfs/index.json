@@ -1,16 +1,6 @@
 {
   "pdfs": [
     {
-      "id": "ffeb2fe3-9c09-4713-99b5-4b4b868bc2f3",
-      "fileName": "test.pdf",
-      "title": "test",
-      "authors": [],
-      "pageCount": 1,
-      "uploadedAt": "2026-04-15T17:32:53.604Z",
-      "slug": "test",
-      "filePath": "ffeb2fe3-9c09-4713-99b5-4b4b868bc2f3.pdf"
-    },
-    {
       "id": "7923b599-f994-4586-8851-23254a393450",
       "fileName": "Purcell_Electricity-and-Magnetism-3rd-Edition.pdf",
       "title": "Purcell_Electricity-and-Magnetism-3rd-Edition",
@@ -19,6 +9,56 @@
       "uploadedAt": "2026-04-15T18:09:05.760Z",
       "slug": "purcellelectricity-and-magnetism-3rd-edition",
       "filePath": "7923b599-f994-4586-8851-23254a393450.pdf"
+    },
+    {
+      "id": "dad63c63-f4fd-4759-bde5-ef41069ce1c1",
+      "fileName": "Discrete Mathematics and Its Applications by Kenneth Rosen.pdf",
+      "title": "Discrete Mathematics and Its Applications by Kenneth Rosen",
+      "authors": [],
+      "pageCount": 1118,
+      "uploadedAt": "2026-04-16T02:43:26.827Z",
+      "slug": "discrete-mathematics-and-its-applications-by-kenneth-rosen",
+      "filePath": "dad63c63-f4fd-4759-bde5-ef41069ce1c1.pdf"
+    },
+    {
+      "id": "4e1951e6-e267-4efe-95a2-5f06f6294fb5",
+      "fileName": "TipoftheRedGiantBranch.pdf",
+      "title": "TipoftheRedGiantBranch",
+      "authors": [],
+      "pageCount": 20,
+      "uploadedAt": "2026-04-16T02:43:40.723Z",
+      "slug": "tipoftheredgiantbranch",
+      "filePath": "4e1951e6-e267-4efe-95a2-5f06f6294fb5.pdf"
+    },
+    {
+      "id": "385e68d9-ce7c-4305-a247-9bbd4d7a9384",
+      "fileName": "principles_of_optics.pdf",
+      "title": "principles_of_optics",
+      "authors": [],
+      "pageCount": 595,
+      "uploadedAt": "2026-04-16T02:44:09.740Z",
+      "slug": "principlesofoptics",
+      "filePath": "385e68d9-ce7c-4305-a247-9bbd4d7a9384.pdf"
+    },
+    {
+      "id": "9dece5ce-8cc1-4684-991e-fb4067ba5f94",
+      "fileName": "CosmoVerseWhitePaper.pdf",
+      "title": "CosmoVerseWhitePaper",
+      "authors": [],
+      "pageCount": 419,
+      "uploadedAt": "2026-04-16T02:44:18.032Z",
+      "slug": "cosmoversewhitepaper",
+      "filePath": "9dece5ce-8cc1-4684-991e-fb4067ba5f94.pdf"
+    },
+    {
+      "id": "30e1993d-8da1-451b-a747-e7ebbf31a1fe",
+      "fileName": "Linear algebra.pdf",
+      "title": "Linear algebra",
+      "authors": [],
+      "pageCount": 925,
+      "uploadedAt": "2026-04-16T02:44:37.128Z",
+      "slug": "linear-algebra",
+      "filePath": "30e1993d-8da1-451b-a747-e7ebbf31a1fe.pdf"
     }
   ]
 }

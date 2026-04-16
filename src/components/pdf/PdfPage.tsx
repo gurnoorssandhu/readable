@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useRef, useCallback } from 'react';
+import React, { useEffect, useRef, useCallback, useState } from 'react';
 import type { PDFDocumentProxy } from 'pdfjs-dist';
 
 interface PdfPageProps {
@@ -10,85 +10,66 @@ interface PdfPageProps {
   onCanvasReady?: (pageNumber: number, canvas: HTMLCanvasElement) => void;
 }
 
+const RENDER_SCALE = 2;
+
 export function PdfPage({ pageNumber, pdfDocument, zoom, onCanvasReady }: PdfPageProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const renderTaskRef = useRef<ReturnType<ReturnType<PDFDocumentProxy['getPage']>['then']> | null>(null);
+  const renderTaskRef = useRef<any>(null);
   const isRenderingRef = useRef(false);
+  const renderedRef = useRef(false);
+  const [baseDimensions, setBaseDimensions] = useState<{ width: number; height: number } | null>(null);
 
   const renderPage = useCallback(async () => {
     const canvas = canvasRef.current;
-    if (!canvas || isRenderingRef.current) return;
+    if (!canvas || isRenderingRef.current || renderedRef.current) return;
 
     isRenderingRef.current = true;
 
     try {
-      // Cancel any in-progress render
       if (renderTaskRef.current) {
-        try {
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          await (renderTaskRef.current as any).cancel?.();
-        } catch {
-          // Ignore cancel errors
-        }
+        try { await renderTaskRef.current.cancel?.(); } catch {}
         renderTaskRef.current = null;
       }
 
       const page = await pdfDocument.getPage(pageNumber);
-      const viewport = page.getViewport({ scale: zoom });
+      const viewport = page.getViewport({ scale: RENDER_SCALE });
+      const baseViewport = page.getViewport({ scale: 1 });
+      setBaseDimensions({ width: baseViewport.width, height: baseViewport.height });
 
-      // Set canvas dimensions to match the viewport
-      const dpr = window.devicePixelRatio || 1;
-      canvas.width = Math.floor(viewport.width * dpr);
-      canvas.height = Math.floor(viewport.height * dpr);
-      canvas.style.width = `${Math.floor(viewport.width)}px`;
-      canvas.style.height = `${Math.floor(viewport.height)}px`;
+      canvas.width = Math.floor(viewport.width);
+      canvas.height = Math.floor(viewport.height);
 
       const context = canvas.getContext('2d');
       if (!context) return;
 
-      context.scale(dpr, dpr);
-
-      const renderContext = {
-        canvas: canvas,
-        canvasContext: context,
-        viewport: viewport,
-      };
-
-      const renderTask = page.render(renderContext);
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      renderTaskRef.current = renderTask as any;
-
+      const renderTask = page.render({ canvas, canvasContext: context, viewport });
+      renderTaskRef.current = renderTask;
       await renderTask.promise;
+      renderedRef.current = true;
 
       if (onCanvasReady && canvasRef.current) {
         onCanvasReady(pageNumber, canvasRef.current);
       }
     } catch (err) {
-      // Ignore cancellation errors (they happen during cleanup)
-      if (err instanceof Error && err.message.includes('Rendering cancelled')) {
-        return;
-      }
+      if (err instanceof Error && err.message.includes('Rendering cancelled')) return;
       console.error(`Error rendering page ${pageNumber}:`, err);
     } finally {
       isRenderingRef.current = false;
       renderTaskRef.current = null;
     }
-  }, [pdfDocument, pageNumber, zoom, onCanvasReady]);
+  }, [pdfDocument, pageNumber, onCanvasReady]);
 
   useEffect(() => {
     renderPage();
-
     return () => {
       if (renderTaskRef.current) {
-        try {
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          (renderTaskRef.current as any).cancel?.();
-        } catch {
-          // Ignore cancel errors
-        }
+        try { renderTaskRef.current.cancel?.(); } catch {}
       }
     };
   }, [renderPage]);
+
+  const cssWidth = baseDimensions ? Math.floor(baseDimensions.width * zoom) : undefined;
+  const cssHeight = baseDimensions ? Math.floor(baseDimensions.height * zoom) : undefined;
 
   return (
     <div
@@ -98,7 +79,11 @@ export function PdfPage({ pageNumber, pdfDocument, zoom, onCanvasReady }: PdfPag
       <canvas
         ref={canvasRef}
         className="shadow-lg rounded"
-        style={{ display: 'block' }}
+        style={{
+          display: 'block',
+          width: cssWidth ? `${cssWidth}px` : undefined,
+          height: cssHeight ? `${cssHeight}px` : undefined,
+        }}
       />
     </div>
   );

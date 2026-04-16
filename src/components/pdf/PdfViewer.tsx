@@ -1,13 +1,12 @@
 'use client';
 
-import React, { useRef, useCallback, useMemo } from 'react';
+import React, { useRef, useCallback, useMemo, useEffect } from 'react';
 import { usePdfDocument } from '@/hooks/usePdfDocument';
 import { usePageVisibility } from '@/hooks/usePageVisibility';
 import { usePdfStore } from '@/store/pdfStore';
 import { PdfPage } from './PdfPage';
 import { PageTracker } from './PageTracker';
 import { SnapshotOverlay } from './SnapshotOverlay';
-import { ZoomControls } from './ZoomControls';
 import { Spinner } from '@/components/ui/Spinner';
 
 interface PdfViewerProps {
@@ -18,6 +17,52 @@ export function PdfViewer({ pdfId }: PdfViewerProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const canvasMapRef = useRef<Map<number, HTMLCanvasElement>>(new Map());
   const zoom = usePdfStore((s) => s.zoom);
+  const setZoom = usePdfStore((s) => s.setZoom);
+  const scrollToPage = usePdfStore((s) => s.scrollToPage);
+  const setScrollToPage = usePdfStore((s) => s.setScrollToPage);
+
+  // Scroll to page when requested
+  useEffect(() => {
+    if (scrollToPage === null) return;
+    const container = containerRef.current;
+    if (!container) return;
+
+    const pageEl = container.querySelector<HTMLElement>(`[data-page-number="${scrollToPage}"]`);
+    if (pageEl) {
+      pageEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+    setScrollToPage(null);
+  }, [scrollToPage, setScrollToPage]);
+
+  // Preserve scroll position on zoom changes
+  const prevZoomRef = useRef(zoom);
+  useEffect(() => {
+    const container = containerRef.current;
+    if (!container || prevZoomRef.current === zoom) return;
+
+    const ratio = zoom / prevZoomRef.current;
+    const viewportMidY = container.scrollTop + container.clientHeight / 2;
+    const newMidY = viewportMidY * ratio;
+    container.scrollTop = newMidY - container.clientHeight / 2;
+
+    prevZoomRef.current = zoom;
+  }, [zoom]);
+
+  // Pinch-to-zoom (trackpad) and Ctrl+scroll
+  useEffect(() => {
+    const container = containerRef.current;
+    if (!container) return;
+
+    const handleWheel = (e: WheelEvent) => {
+      if (!e.ctrlKey && !e.metaKey) return;
+      e.preventDefault();
+      const delta = -e.deltaY * 0.01;
+      setZoom(usePdfStore.getState().zoom + delta);
+    };
+
+    container.addEventListener('wheel', handleWheel, { passive: false });
+    return () => container.removeEventListener('wheel', handleWheel);
+  }, [setZoom]);
 
   const pdfUrl = useMemo(() => `/data/pdfs/${pdfId}.pdf`, [pdfId]);
   const { pdfDocument, pageCount, isLoading, error } = usePdfDocument(pdfUrl);
@@ -58,39 +103,21 @@ export function PdfViewer({ pdfId }: PdfViewerProps) {
   }
 
   return (
-    <div className="relative flex flex-col h-full">
-      {/* Toolbar */}
-      <div className="flex items-center justify-between px-4 py-2 glass-subtle border-b border-[var(--glass-border)]">
-        <span className="text-xs text-[var(--text-muted)]">
-          {pageCount} {pageCount === 1 ? 'page' : 'pages'}
-        </span>
-        <ZoomControls />
+    <div className="h-full w-full overflow-auto relative" ref={containerRef}
+         style={{ background: 'var(--bg-primary)' }}>
+      <div className="flex flex-col items-center py-4 min-h-full">
+        {pages.map((pageNumber) => (
+          <PdfPage
+            key={pageNumber}
+            pageNumber={pageNumber}
+            pdfDocument={pdfDocument}
+            zoom={zoom}
+            onCanvasReady={handleCanvasReady}
+          />
+        ))}
       </div>
-
-      {/* Scrollable page container */}
-      <div
-        ref={containerRef}
-        className="flex-1 overflow-auto relative"
-        style={{ background: 'var(--bg-secondary)' }}
-      >
-        <div className="flex flex-col items-center py-4 min-h-full">
-          {pages.map((pageNumber) => (
-            <PdfPage
-              key={pageNumber}
-              pageNumber={pageNumber}
-              pdfDocument={pdfDocument}
-              zoom={zoom}
-              onCanvasReady={handleCanvasReady}
-            />
-          ))}
-        </div>
-
-        {/* Snapshot selection overlay */}
-        <SnapshotOverlay containerRef={containerRef} canvasMapRef={canvasMapRef} />
-
-        {/* Invisible page tracker */}
-        <PageTracker containerRef={containerRef} pageCount={pageCount} />
-      </div>
+      <SnapshotOverlay containerRef={containerRef} canvasMapRef={canvasMapRef} />
+      <PageTracker containerRef={containerRef} pageCount={pageCount} />
     </div>
   );
 }

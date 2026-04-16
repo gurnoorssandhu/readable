@@ -5,13 +5,13 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { usePdfStore } from '@/store/pdfStore';
 import { useSessionStore } from '@/store/sessionStore';
 import { useUiStore } from '@/store/uiStore';
-import { AppShell } from '@/components/layout/AppShell';
-import { TopBar } from '@/components/layout/TopBar';
-import { Sidebar } from '@/components/layout/Sidebar';
 import { PdfViewer } from '@/components/pdf/PdfViewer';
 import { ChatPanel } from '@/components/chat/ChatPanel';
+import { ReaderToolbar } from '@/components/layout/ReaderToolbar';
+import TOCSidebar from '@/components/pdf/TOCSidebar';
 import { SessionEndDialog } from '@/components/session/SessionEndDialog';
 import { Spinner } from '@/components/ui/Spinner';
+import { usePdfDocument } from '@/hooks/usePdfDocument';
 import type { PdfMeta } from '@/types/pdf';
 
 function ReaderContent() {
@@ -24,7 +24,7 @@ function ReaderContent() {
   const [showEndDialog, setShowEndDialog] = useState(false);
   const [loaded, setLoaded] = useState(false);
 
-  // Load PDF metadata
+  // Load PDF metadata from API
   useEffect(() => {
     if (!pdfId) return;
     fetch('/api/pdf/upload')
@@ -46,51 +46,46 @@ function ReaderContent() {
     }
   }, [isCoReading, setChatPanelOpen]);
 
+  // Load PDF document for TOC sidebar
+  const pdfUrl = pdfId ? `/data/pdfs/${pdfId}.pdf` : null;
+  const { pdfDocument } = usePdfDocument(pdfUrl);
+
   if (!pdfId) {
     return (
-      <AppShell>
-        <div className="flex items-center justify-center h-full">
-          <p className="text-[var(--text-muted)]">No PDF selected</p>
-        </div>
-      </AppShell>
+      <div className="h-screen w-screen flex items-center justify-center bg-gradient-dark">
+        <p className="text-[var(--text-muted)]">No PDF selected</p>
+      </div>
     );
   }
 
   if (!loaded) {
     return (
-      <AppShell>
-        <div className="flex items-center justify-center h-full">
-          <Spinner size="lg" />
-        </div>
-      </AppShell>
+      <div className="h-screen w-screen flex items-center justify-center bg-gradient-dark">
+        <Spinner size="lg" />
+      </div>
     );
   }
 
   return (
-    <AppShell>
-      <TopBar pdfId={pdfId} onBack={() => router.push('/')} onEndRequest={() => setShowEndDialog(true)} />
+    <div className="h-screen w-screen overflow-hidden bg-gradient-dark">
+      {/* TOC Sidebar — slide-over from left */}
+      <TOCSidebar pdfDocument={pdfDocument} />
 
-      <div className="flex-1 flex overflow-hidden relative">
-        <Sidebar
-          onSelectPdf={(id) => router.push(`/reader?pdf=${id}`)}
-          currentPdfId={pdfId}
-        />
+      {/* PDF Viewer — full viewport */}
+      <PdfViewer pdfId={pdfId} />
 
-        {/* PDF Viewer - main content */}
-        <div className="flex-1 overflow-hidden">
-          <PdfViewer pdfId={pdfId} />
-        </div>
+      {/* Chat Panel — slide-over from right */}
+      <ChatPanel />
 
-        {/* Chat panel overlay */}
-        <ChatPanel />
-      </div>
+      {/* Floating Toolbar — centered at bottom */}
+      <ReaderToolbar pdfId={pdfId} onEndRequest={() => setShowEndDialog(true)} onBack={() => router.push('/')} />
 
       {/* Session end dialog */}
       <SessionEndDialog
         open={showEndDialog}
         onClose={() => setShowEndDialog(false)}
       />
-    </AppShell>
+    </div>
   );
 }
 
@@ -98,11 +93,9 @@ export default function ReaderPage() {
   return (
     <Suspense
       fallback={
-        <AppShell>
-          <div className="flex items-center justify-center h-full">
-            <Spinner size="lg" />
-          </div>
-        </AppShell>
+        <div className="h-screen w-screen flex items-center justify-center bg-gradient-dark">
+          <Spinner size="lg" />
+        </div>
       }
     >
       <ReaderContent />

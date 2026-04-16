@@ -3,6 +3,9 @@
 import React from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
+import remarkMath from 'remark-math';
+import rehypeKatex from 'rehype-katex';
+import 'katex/dist/katex.min.css';
 import type { ChatMessage as ChatMessageType } from '@/types/session';
 import { ToolCallIndicator } from './ToolCallIndicator';
 
@@ -14,9 +17,9 @@ export function ChatMessage({ message }: ChatMessageProps) {
   const isUser = message.role === 'user';
 
   return (
-    <div className={`flex ${isUser ? 'justify-end' : 'justify-start'} mb-3`}>
+    <div className={`flex ${isUser ? 'justify-end' : 'justify-start'} mb-2`}>
       <div
-        className={`max-w-[85%] rounded-2xl px-4 py-2.5 ${
+        className={`max-w-[85%] rounded-2xl px-3 py-2 ${
           isUser
             ? 'bg-[var(--accent)] text-white rounded-br-md'
             : 'glass rounded-bl-md text-[var(--text-primary)]'
@@ -41,7 +44,7 @@ export function ChatMessage({ message }: ChatMessageProps) {
           <p className="text-sm whitespace-pre-wrap">{message.content}</p>
         ) : (
           <div className="chat-markdown text-sm">
-            <ReactMarkdown remarkPlugins={[remarkGfm]}>
+            <ReactMarkdown remarkPlugins={[remarkGfm, remarkMath]} rehypePlugins={[rehypeKatex]}>
               {message.content}
             </ReactMarkdown>
           </div>

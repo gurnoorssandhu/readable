@@ -159,3 +159,29 @@ body {
 .transition-glass {
   transition: background 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
 }
+
+/* Floating toolbar */
+.toolbar-glass {
+  background: rgba(20, 20, 30, 0.85);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 20px;
+}
+
+/* Toolbar auto-hide */
+.toolbar-autohide {
+  opacity: 1;
+  transition: opacity 0.3s ease;
+}
+
+.toolbar-autohide.hidden {
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* TOC sidebar slide-in */
+@keyframes slideInLeft {
+  from { transform: translateX(-100%); }
+  to { transform: translateX(0); }
+}

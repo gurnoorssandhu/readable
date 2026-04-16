@@ -91,9 +91,6 @@ export function ChatInput({ onSend, isStreaming, onCancel }: ChatInputProps) {
         )}
       </div>
 
-      <p className="text-[10px] text-[var(--text-muted)] text-center">
-        Enter to send, Shift+Enter for new line
-      </p>
     </div>
   );
 }

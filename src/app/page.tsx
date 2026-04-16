@@ -2,13 +2,10 @@
 
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Upload, FileText, BookOpen, Plus } from 'lucide-react';
+import { Upload, FileText, Plus, Trash2 } from 'lucide-react';
 import type { PdfMeta } from '@/types/pdf';
 import { usePdfStore } from '@/store/pdfStore';
-import { GlassCard } from '@/components/ui/GlassCard';
-import { Button } from '@/components/ui/Button';
 import { Spinner } from '@/components/ui/Spinner';
-import { AppShell } from '@/components/layout/AppShell';
 
 export default function HomePage() {
   const router = useRouter();
@@ -75,117 +72,116 @@ export default function HomePage() {
     router.push(`/reader?pdf=${pdfId}`);
   };
 
+  const handleDelete = useCallback(async (e: React.MouseEvent, id: string) => {
+    e.stopPropagation();
+    try {
+      await fetch('/api/pdf/upload', { method: 'DELETE', body: JSON.stringify({ id }) });
+      await loadPdfs();
+    } catch {
+      // ignore
+    }
+  }, [loadPdfs]);
+
   return (
-    <AppShell>
-      <div className="flex-1 flex flex-col items-center overflow-y-auto">
+    <div className="h-screen w-screen overflow-y-auto bg-gradient-dark">
+      <div className="max-w-2xl mx-auto px-6 pt-16 pb-16">
         {/* Header */}
-        <div className="w-full max-w-4xl px-6 pt-16 pb-8">
-          <div className="flex items-center gap-3 mb-2">
-            <div className="w-10 h-10 rounded-xl bg-[var(--accent)] flex items-center justify-center glow-accent">
-              <BookOpen size={22} className="text-white" />
-            </div>
-            <h1 className="text-3xl font-bold text-[var(--text-primary)]">Readable</h1>
+        <div className="flex items-center justify-between mb-8">
+          <div>
+            <h1 className="text-xl font-semibold text-[var(--text-primary)]">Readable</h1>
+            <p className="text-xs text-[var(--text-muted)] mt-0.5">AI-powered co-reading assistant</p>
           </div>
-          <p className="text-[var(--text-secondary)] text-sm ml-[52px]">
-            AI-powered co-reading assistant for your PDFs
-          </p>
-        </div>
-
-        {/* Upload area */}
-        <div className="w-full max-w-4xl px-6 mb-8">
-          <div
-            onDragOver={(e) => { e.preventDefault(); setIsDragging(true); }}
-            onDragLeave={() => setIsDragging(false)}
-            onDrop={handleDrop}
+          <button
             onClick={() => fileInputRef.current?.click()}
-            className={`
-              flex flex-col items-center justify-center gap-3 p-8 rounded-2xl border-2 border-dashed cursor-pointer transition-all duration-200
-              ${isDragging
-                ? 'border-[var(--accent)] bg-[var(--accent-glow)]'
-                : 'border-[var(--glass-border)] hover:border-[var(--text-muted)] glass'}
-            `}
+            className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg bg-[var(--accent)] hover:bg-[var(--accent-hover)] text-white transition-colors glow-accent"
           >
-            {isUploading ? (
-              <>
-                <Spinner size="md" />
-                <p className="text-sm text-[var(--text-secondary)]">Uploading...</p>
-              </>
-            ) : (
-              <>
-                <div className="w-12 h-12 rounded-full glass flex items-center justify-center">
-                  <Upload size={22} className="text-[var(--accent)]" />
-                </div>
-                <div className="text-center">
-                  <p className="text-sm text-[var(--text-primary)] font-medium">
-                    Drop a PDF here or click to upload
-                  </p>
-                  <p className="text-xs text-[var(--text-muted)] mt-1">
-                    Textbooks, research papers, lecture notes
-                  </p>
-                </div>
-              </>
-            )}
-          </div>
-          <input
-            ref={fileInputRef}
-            type="file"
-            accept=".pdf,application/pdf"
-            className="hidden"
-            onChange={handleFileInput}
-          />
+            <Plus size={14} />
+            Add PDF
+          </button>
         </div>
 
-        {/* PDF Library Grid */}
-        <div className="w-full max-w-4xl px-6 pb-16">
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-lg font-semibold text-[var(--text-primary)]">Your Library</h2>
-            <Button variant="ghost" size="sm" onClick={() => fileInputRef.current?.click()}>
-              <Plus size={16} /> Add PDF
-            </Button>
-          </div>
+        {/* Upload drop zone */}
+        <div
+          onDragOver={(e) => { e.preventDefault(); setIsDragging(true); }}
+          onDragLeave={() => setIsDragging(false)}
+          onDrop={handleDrop}
+          onClick={() => fileInputRef.current?.click()}
+          className={`
+            flex flex-col items-center justify-center gap-2 p-6 rounded-xl border border-dashed cursor-pointer transition-all duration-200
+            ${isDragging
+              ? 'border-[var(--accent)] bg-[var(--accent-glow)]'
+              : 'border-[var(--glass-border)] hover:border-[var(--text-muted)] toolbar-glass'}
+          `}
+        >
+          {isUploading ? (
+            <>
+              <Spinner size="md" />
+              <p className="text-xs text-[var(--text-secondary)]">Uploading...</p>
+            </>
+          ) : (
+            <>
+              <Upload size={20} className="text-[var(--text-muted)]" />
+              <p className="text-xs text-[var(--text-muted)]">
+                Drop a PDF here or click to upload
+              </p>
+            </>
+          )}
+        </div>
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept=".pdf,application/pdf"
+          className="hidden"
+          onChange={handleFileInput}
+        />
+
+        {/* PDF Library List */}
+        <div className="mt-10">
+          <h2 className="text-sm font-medium text-[var(--text-secondary)] mb-3">Your Library</h2>
 
           {isLoading ? (
             <div className="flex justify-center py-12">
               <Spinner size="lg" />
             </div>
           ) : pdfs.length === 0 ? (
-            <div className="text-center py-16">
-              <FileText size={40} className="text-[var(--text-muted)] mx-auto mb-3" />
-              <p className="text-[var(--text-secondary)]">No PDFs yet</p>
-              <p className="text-xs text-[var(--text-muted)] mt-1">Upload your first PDF to get started</p>
+            <div className="text-center py-12">
+              <FileText size={24} className="text-[var(--text-muted)] mx-auto mb-2" />
+              <p className="text-sm text-[var(--text-muted)]">No PDFs yet</p>
             </div>
           ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-              {pdfs.map((pdf) => (
-                <GlassCard
+            <div className="flex flex-col">
+              {pdfs.map((pdf, idx) => (
+                <div
                   key={pdf.id}
-                  variant="default"
-                  hover
                   onClick={() => openPdf(pdf.id)}
-                  className="p-4"
+                  role="button"
+                  className={`group flex items-center gap-3 w-full px-4 py-3 rounded-lg hover:bg-[var(--glass-bg-hover)] transition-colors text-left cursor-pointer ${
+                    idx < pdfs.length - 1 ? 'border-b border-[var(--glass-border)]' : ''
+                  }`}
                 >
-                  <div className="flex items-start gap-3">
-                    <div className="w-10 h-10 rounded-lg glass flex items-center justify-center shrink-0">
-                      <FileText size={20} className="text-[var(--accent)]" />
-                    </div>
-                    <div className="min-w-0 flex-1">
-                      <p className="text-sm font-medium text-[var(--text-primary)] truncate">
-                        {pdf.title || pdf.fileName}
-                      </p>
-                      <p className="text-xs text-[var(--text-muted)] mt-1">
-                        {pdf.pageCount} pages
-                      </p>
-                      <p className="text-xs text-[var(--text-muted)]">
-                        {new Date(pdf.uploadedAt).toLocaleDateString()}
-                      </p>
-                    </div>
-                  </div>
-                </GlassCard>
+                  <FileText size={16} className="text-[var(--text-muted)] shrink-0" />
+                  <span className="text-sm text-[var(--text-primary)] flex-1 truncate">
+                    {pdf.title || pdf.fileName}
+                  </span>
+                  <span className="text-xs text-[var(--text-muted)] tabular-nums shrink-0">
+                    {pdf.pageCount}p
+                  </span>
+                  <span className="text-xs text-[var(--text-muted)] tabular-nums shrink-0">
+                    {new Date(pdf.uploadedAt).toLocaleDateString()}
+                  </span>
+                  <button
+                    onClick={(e) => handleDelete(e, pdf.id)}
+                    className="p-1 rounded hover:bg-[var(--glass-bg-hover)] text-[var(--text-muted)] hover:text-[var(--danger)] transition-colors shrink-0 opacity-0 group-hover:opacity-100"
+                    title="Delete PDF"
+                  >
+                    <Trash2 size={14} />
+                  </button>
+                </div>
               ))}
             </div>
           )}
         </div>
       </div>
-    </AppShell>
+    </div>
   );
 }

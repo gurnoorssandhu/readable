@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { savePdf, getPdfIndex } from '@/lib/pdf/pdfStorage';
+import { savePdf, getPdfIndex, deletePdf } from '@/lib/pdf/pdfStorage';
 
 export async function GET() {
   try {
@@ -42,6 +42,23 @@ export async function POST(request: NextRequest) {
         success: false,
         error: err instanceof Error ? err.message : 'Upload failed',
       },
+      { status: 500 }
+    );
+  }
+}
+
+export async function DELETE(request: NextRequest) {
+  try {
+    const { id } = await request.json();
+    if (!id) {
+      return NextResponse.json({ error: 'id is required' }, { status: 400 });
+    }
+    await deletePdf(id);
+    return NextResponse.json({ success: true });
+  } catch (err) {
+    console.error('PDF delete error:', err);
+    return NextResponse.json(
+      { error: err instanceof Error ? err.message : 'Delete failed' },
       { status: 500 }
     );
   }
